@@ -6,6 +6,7 @@ package Lincache
 import (
 	"fmt"
 	"log"
+	"main/Lincache/Lincachepb"
 	"main/Lincache/singleflight"
 	"sync"
 )
@@ -116,9 +117,14 @@ func (g *Group) loadFromPeer(key string) (value ByteView, err error) {
 }
 
 func (g *Group) getFromPeer(peer PeerGetter, key string) (ByteView, error) {
-	bytes, err := peer.Get(g.name, key)
+	req := &Lincachepb.Request{
+		Group: g.name,
+		Key:   key,
+	}
+	res := &Lincachepb.Response{}
+	err := peer.Get(req, res)
 	if err != nil {
 		return ByteView{}, err
 	}
-	return ByteView{bytes}, nil
+	return ByteView{res.Value}, nil
 }
